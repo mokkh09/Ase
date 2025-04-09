@@ -1,10 +1,8 @@
-
-( أنتبيه مشفر اوبه يا علي )
-
+Ase
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>تشفير النص | AES</title>
+  <title>تشفير النصوص | AES</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
@@ -21,6 +19,8 @@
       justify-content: center;
       text-align: center;
       background-image: radial-gradient(circle at center, #111 0%, #000 100%);
+      transform-style: preserve-3d;
+      perspective: 1500px;
     }
 
     h2 {
@@ -28,6 +28,11 @@
       color: #00FF00;
       text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
       margin-bottom: 20px;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    h2:hover {
+      transform: rotateY(360deg) scale(1.2);
     }
 
     textarea, input {
@@ -42,6 +47,14 @@
       border: 2px solid #00FF00;
       resize: vertical;
       box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+      transition: all 0.3s ease;
+    }
+
+    textarea:focus, input:focus {
+      box-shadow: 0 0 15px #00FF00;
+      border: 2px solid #00FF00;
+      color: #000;
+      background-color: #00FF00;
     }
 
     button {
@@ -108,14 +121,14 @@
       font-size: 20px;
       font-weight: bold;
     }
+
   </style>
 </head>
 <body>
 
   <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
-  <audio id="sigSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
-
-  <h2>تشفير النص | AES</h2>
+  
+  <h2>تشفير النصوص | AES</h2>
 
   <input id="password" type="password" placeholder="كلمة المرور السرّية" />
   <textarea id="input" placeholder="اكتب النص هنا..."></textarea>
@@ -138,22 +151,15 @@
   </footer>
 
   <script>
-    const PASSWORD_HASH = btoa("1234");
-
     function playClickSound() {
       const sound = document.getElementById("clickSound");
       sound.currentTime = 0;
       sound.play();
     }
 
-    function playSignatureSound() {
-      const sound = document.getElementById("sigSound");
-      sound.currentTime = 0;
-      sound.play();
-    }
-
     function checkPassword() {
       const entered = btoa(document.getElementById("password").value);
+      const PASSWORD_HASH = btoa("1234");
       if (entered !== PASSWORD_HASH) {
         alert("كلمة المرور غير صحيحة!");
         return false;
