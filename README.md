@@ -2,160 +2,229 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>دردشة مع التشفير</title>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+  <title>تشفير النص | AES</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
+      font-family: 'Share Tech Mono', monospace;
+      background-color: #1A1A1D;
+      color: #F1F1F1;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
       align-items: center;
+      padding: 30px;
       min-height: 100vh;
-      margin: 0;
+      justify-content: center;
+      text-align: center;
+      background-image: radial-gradient(circle at center, #111 0%, #000 100%);
     }
 
-    #chatContainer {
-      width: 100%;
+    h2 {
+      font-size: 34px;
+      color: #00FF00;
+      text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+      margin-bottom: 20px;
+    }
+
+    textarea, input {
+      background-color: #111;
+      color: #00FF00;
+      width: 90%;
       max-width: 600px;
-      background-color: #fff;
-      box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
-      border-radius: 10px;
-      margin-top: 50px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      padding: 15px;
+      font-size: 18px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      border: 2px solid #00FF00;
+      resize: vertical;
+      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
     }
 
-    #messages {
-      padding: 20px;
-      overflow-y: auto;
-      height: 400px;
-    }
-
-    .message {
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 10px;
-      max-width: 75%;
-      word-wrap: break-word;
-    }
-
-    .message.sent {
-      background-color: #e1ffc7;
-      align-self: flex-end;
-    }
-
-    .message.received {
-      background-color: #f1f1f1;
-      align-self: flex-start;
-    }
-
-    .inputContainer {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px;
-      background-color: #eee;
-    }
-
-    #inputMessage {
-      width: 85%;
-      padding: 10px;
-      border: none;
-      border-radius: 20px;
-      background-color: #fff;
-    }
-
-    #sendButton {
-      width: 10%;
-      padding: 10px;
-      background-color: #128C7E;
-      color: white;
-      border: none;
-      border-radius: 50%;
+    button {
+      padding: 15px 30px;
+      margin: 10px;
+      border: 2px solid #00FF00;
+      border-radius: 12px;
+      background-color: #000;
+      color: #00FF00;
+      font-size: 18px;
       cursor: pointer;
+      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+      transition: transform 0.2s, background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #00FF00;
+      color: #000;
+      transform: scale(1.1);
+    }
+
+    #output {
+      background-color: #111;
+      color: #F1F1F1;
+    }
+
+    .action-buttons {
+      margin-top: 20px;
     }
 
     footer {
-      background-color: #128C7E;
-      color: white;
-      width: 100%;
+      margin-top: 40px;
       text-align: center;
-      padding: 5px;
-      position: fixed;
-      bottom: 0;
+    }
+
+    .signature-title {
+      font-size: 18px;
+      color: #00FF00;
+    }
+
+    .signature {
+      font-size: 22px;
+      color: #00FF00;
+      text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00;
+      }
+      to {
+        text-shadow: 0 0 15px #00FF00, 0 0 30px #00FF00;
+      }
+    }
+
+    #statusMessage {
+      margin-top: 20px;
+      color: #FF0000;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    #logContainer {
+      margin-top: 50px;
+      background: #0f0f0f;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00FF00;
+      max-width: 600px;
+      width: 90%;
     }
   </style>
 </head>
 <body>
-  <div id="chatContainer">
-    <div id="messages"></div>
-    <div class="inputContainer">
-      <input type="text" id="inputMessage" placeholder="اكتب رسالتك هنا..." />
-      <button id="sendButton" onclick="sendMessage()">إرسال</button>
-    </div>
+
+  <h2>تشفير النص | AES</h2>
+
+  <input id="password" type="password" placeholder="كلمة المرور السرّية" />
+  <textarea id="input" placeholder="اكتب النص هنا..."></textarea>
+
+  <div class="action-buttons">
+    <button onclick="encrypt();">تشفير النص</button>
+    <button onclick="decrypt();">فك التشفير</button>
+    <button onclick="copyResult();">نسخ</button>
+    <button onclick="shareWhatsApp();">مشاركة واتساب</button>
   </div>
 
+  <h3>النتيجة:</h3>
+  <textarea id="output" readonly></textarea>
+
+  <div id="statusMessage"></div>
+
+  <div id="logContainer"></div>
+
   <footer>
-    <p>مطور بواسطة M.Khasroof</p>
+    <p class="signature-title">Coded by</p>
+    <p class="signature">M.Khasroof</p>
   </footer>
 
   <script>
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
-      authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-      databaseURL: "YOUR_FIREBASE_DATABASE_URL",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-    const app = firebase.initializeApp(firebaseConfig);
-    const database = firebase.database(app);
+    // تسجيل الدخول
+    document.addEventListener("DOMContentLoaded", () => {
+      const visits = JSON.parse(localStorage.getItem("visits") || "[]");
+      const newVisit = {
+        time: new Date().toLocaleString(),
+        action: "دخل الموقع"
+      };
+      visits.push(newVisit);
+      localStorage.setItem("visits", JSON.stringify(visits));
+      renderLog();
+    });
 
-    const roomId = "chat_room_1"; // Room ID for the chat
-    const secretKey = "your-secret-key"; // Key for AES encryption
+    // تسجيل الكتابة
+    document.getElementById("input").addEventListener("input", () => {
+      const visits = JSON.parse(localStorage.getItem("visits") || "[]");
+      const text = document.getElementById("input").value;
+      if (text.length > 0) {
+        visits.push({
+          time: new Date().toLocaleString(),
+          action: "كتب: " + text.slice(0, 30) + "..."
+        });
+        localStorage.setItem("visits", JSON.stringify(visits));
+        renderLog();
+      }
+    });
 
-    function sendMessage() {
-      const inputMessage = document.getElementById("inputMessage");
-      const messageText = inputMessage.value.trim();
+    function renderLog() {
+      const logContainer = document.getElementById("logContainer");
+      const visits = JSON.parse(localStorage.getItem("visits") || "[]");
+      logContainer.innerHTML = "<h3>سجل النشاط:</h3>" + visits.slice(-10).reverse().map(v => `
+        <p style="font-size: 14px; color: #00FF00;">[${v.time}] ${v.action}</p>
+      `).join("");
+    }
 
-      if (messageText !== "") {
-        // Encrypt the message using AES
-        const encryptedMessage = CryptoJS.AES.encrypt(messageText, secretKey).toString();
+    function encrypt() {
+      const text = document.getElementById("input").value;
+      const password = document.getElementById("password").value;
+      if (!password || !text) {
+        showMessage("يرجى إدخال النص وكلمة المرور!");
+        return;
+      }
+      const ciphertext = CryptoJS.AES.encrypt(text, password).toString();
+      document.getElementById("output").value = ciphertext;
+      showMessage("تم التشفير بنجاح!");
+    }
 
-        // Save the encrypted message to Firebase
-        const message = {
-          text: encryptedMessage,
-          timestamp: new Date().toISOString(),
-          sender: "User", // You can add dynamic user name
-        };
-
-        // Save message to Firebase Database
-        database.ref("messages/" + roomId).push(message);
-
-        inputMessage.value = ""; // Clear the input field
+    function decrypt() {
+      const code = document.getElementById("input").value;
+      const password = document.getElementById("password").value;
+      try {
+        const bytes = CryptoJS.AES.decrypt(code, password);
+        const originalText = bytes.toString(CryptoJS.enc.Utf8);
+        if (!originalText) throw new Error();
+        document.getElementById("output").value = originalText;
+        showMessage("تم فك التشفير بنجاح!");
+      } catch {
+        showMessage("فشل فك التشفير! تأكد من النص وكلمة المرور.");
       }
     }
 
-    // Fetch messages from Firebase and decrypt them
-    database.ref("messages/" + roomId).on("child_added", function(snapshot) {
-      const message = snapshot.val();
-      const decryptedMessage = CryptoJS.AES.decrypt(message.text, secretKey).toString(CryptoJS.enc.Utf8);
+    function copyResult() {
+      const output = document.getElementById("output");
+      output.select();
+      document.execCommand("copy");
+      showMessage("تم النسخ!");
+    }
 
-      const messageElement = document.createElement("div");
-      messageElement.classList.add("message");
-      messageElement.classList.add(message.sender === "User" ? "sent" : "received");
+    function shareWhatsApp() {
+      const text = document.getElementById("output").value;
+      if (!text) {
+        alert("لا يوجد نص للمشاركة!");
+        return;
+      }
+      const url = "https://wa.me/?text=" + encodeURIComponent(text);
+      window.open(url, "_blank");
+    }
 
-      messageElement.textContent = decryptedMessage;
-
-      document.getElementById("messages").appendChild(messageElement);
-      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight; // Scroll to bottom
-    });
+    function showMessage(message) {
+      const statusMessage = document.getElementById("statusMessage");
+      statusMessage.textContent = message;
+      setTimeout(() => {
+        statusMessage.textContent = '';
+      }, 3000);
+    }
   </script>
 </body>
 </html>
