@@ -154,11 +154,23 @@
       });
     }
 
+    // Function to get or set the user's name
+    function getUserName() {
+      let user = localStorage.getItem('chatUserName');
+      if (!user) {
+        user = prompt("أدخل اسمك:");
+        if (user) {
+          localStorage.setItem('chatUserName', user); // Store the name for future sessions
+        }
+      }
+      return user;
+    }
+
     // Function to send a message
     function sendMessage() {
       const messageInput = document.getElementById('messageInput');
       const message = messageInput.value.trim();
-      const user = prompt("أدخل اسمك:");
+      const user = getUserName(); // Get the user's name once and reuse it
       if (message === '' || !user) return; // Ignore empty messages or missing user
       const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
       messages.push({ text: message, user: user });
