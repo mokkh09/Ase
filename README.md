@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!M.Khasroof>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -19,6 +19,7 @@
       justify-content: center;
       text-align: center;
       background-image: radial-gradient(circle at center, #111 0%, #000 100%);
+      overflow: hidden;
     }
 
     h2 {
@@ -26,6 +27,12 @@
       color: #00FF00;
       text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
       margin-bottom: 20px;
+      animation: glowText 1.5s infinite alternate;
+    }
+
+    @keyframes glowText {
+      0% { text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00; }
+      100% { text-shadow: 0 0 20px #00FF00, 0 0 30px #00FF00; }
     }
 
     textarea, input {
@@ -40,6 +47,12 @@
       border: 2px solid #00FF00;
       resize: vertical;
       box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+      transition: all 0.3s ease;
+    }
+
+    textarea:focus, input:focus {
+      outline: none;
+      box-shadow: 0 0 20px #00FF00, 0 0 30px #00FF00;
     }
 
     button {
@@ -52,7 +65,7 @@
       font-size: 18px;
       cursor: pointer;
       box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-      transition: transform 0.2s, background-color 0.3s;
+      transition: transform 0.3s, background-color 0.3s;
     }
 
     button:hover {
@@ -64,10 +77,6 @@
     #output {
       background-color: #111;
       color: #F1F1F1;
-    }
-
-    .action-buttons {
-      margin-top: 20px;
     }
 
     footer {
@@ -84,16 +93,7 @@
       font-size: 22px;
       color: #00FF00;
       text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-      animation: glow 2s infinite alternate;
-    }
-
-    @keyframes glow {
-      from {
-        text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00;
-      }
-      to {
-        text-shadow: 0 0 15px #00FF00, 0 0 30px #00FF00;
-      }
+      animation: glowText 2s infinite alternate;
     }
 
     #statusMessage {
@@ -103,14 +103,19 @@
       font-weight: bold;
     }
 
-    #logContainer {
-      margin-top: 50px;
-      background: #0f0f0f;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #00FF00;
-      max-width: 600px;
-      width: 90%;
+    .action-buttons {
+      margin-top: 20px;
+    }
+
+    /* خلفية متحركة */
+    @keyframes backgroundAnimation {
+      0% { background-color: #111; }
+      50% { background-color: #333; }
+      100% { background-color: #111; }
+    }
+
+    body {
+      animation: backgroundAnimation 10s infinite alternate;
     }
   </style>
 </head>
@@ -133,55 +138,12 @@
 
   <div id="statusMessage"></div>
 
-  <div id="logContainer"></div>
-
   <footer>
     <p class="signature-title">Coded by</p>
     <p class="signature">M.Khasroof</p>
   </footer>
 
   <script>
-    // تسجيل الدخول
-    document.addEventListener("DOMContentLoaded", () => {
-      const visits = JSON.parse(localStorage.getItem("visits") || "[]");
-      const newVisit = {
-        time: new Date().toLocaleString(),
-        action: "دخل الموقع"
-      };
-      visits.push(newVisit);
-      localStorage.setItem("visits", JSON.stringify(visits));
-      renderLog();
-
-      // إذا كان هناك نص مشترك من واتساب
-      const urlParams = new URLSearchParams(window.location.search);
-      const sharedText = urlParams.get('text');
-      if (sharedText) {
-        document.getElementById('input').value = decodeURIComponent(sharedText);
-      }
-    });
-
-    // تسجيل الكتابة
-    document.getElementById("input").addEventListener("input", () => {
-      const visits = JSON.parse(localStorage.getItem("visits") || "[]");
-      const text = document.getElementById("input").value;
-      if (text.length > 0) {
-        visits.push({
-          time: new Date().toLocaleString(),
-          action: "كتب: " + text.slice(0, 30) + "..."
-        });
-        localStorage.setItem("visits", JSON.stringify(visits));
-        renderLog();
-      }
-    });
-
-    function renderLog() {
-      const logContainer = document.getElementById("logContainer");
-      const visits = JSON.parse(localStorage.getItem("visits") || "[]");
-      logContainer.innerHTML = "<h3>سجل النشاط:</h3>" + visits.slice(-10).reverse().map(v => `
-        <p style="font-size: 14px; color: #00FF00;">[${v.time}] ${v.action}</p>
-      `).join("");
-    }
-
     function encrypt() {
       const text = document.getElementById("input").value;
       const password = document.getElementById("password").value;
