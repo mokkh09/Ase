@@ -1,4 +1,4 @@
-<!M.Khasroof>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -19,7 +19,6 @@
       justify-content: center;
       text-align: center;
       background-image: radial-gradient(circle at center, #111 0%, #000 100%);
-      overflow: hidden;
     }
 
     h2 {
@@ -27,12 +26,6 @@
       color: #00FF00;
       text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
       margin-bottom: 20px;
-      animation: glowText 1.5s infinite alternate;
-    }
-
-    @keyframes glowText {
-      0% { text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00; }
-      100% { text-shadow: 0 0 20px #00FF00, 0 0 30px #00FF00; }
     }
 
     textarea, input {
@@ -47,12 +40,6 @@
       border: 2px solid #00FF00;
       resize: vertical;
       box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-      transition: all 0.3s ease;
-    }
-
-    textarea:focus, input:focus {
-      outline: none;
-      box-shadow: 0 0 20px #00FF00, 0 0 30px #00FF00;
     }
 
     button {
@@ -65,7 +52,7 @@
       font-size: 18px;
       cursor: pointer;
       box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-      transition: transform 0.3s, background-color 0.3s;
+      transition: transform 0.2s, background-color 0.3s;
     }
 
     button:hover {
@@ -77,6 +64,10 @@
     #output {
       background-color: #111;
       color: #F1F1F1;
+    }
+
+    .action-buttons {
+      margin-top: 20px;
     }
 
     footer {
@@ -93,7 +84,16 @@
       font-size: 22px;
       color: #00FF00;
       text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-      animation: glowText 2s infinite alternate;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00;
+      }
+      to {
+        text-shadow: 0 0 15px #00FF00, 0 0 30px #00FF00;
+      }
     }
 
     #statusMessage {
@@ -103,20 +103,6 @@
       font-weight: bold;
     }
 
-    .action-buttons {
-      margin-top: 20px;
-    }
-
-    /* خلفية متحركة */
-    @keyframes backgroundAnimation {
-      0% { background-color: #111; }
-      50% { background-color: #333; }
-      100% { background-color: #111; }
-    }
-
-    body {
-      animation: backgroundAnimation 10s infinite alternate;
-    }
   </style>
 </head>
 <body>
@@ -144,25 +130,59 @@
   </footer>
 
   <script>
+    // تشفير النص باستخدام AES مع Salt
     function encrypt() {
       const text = document.getElementById("input").value;
       const password = document.getElementById("password").value;
+      
       if (!password || !text) {
         showMessage("يرجى إدخال النص وكلمة المرور!");
         return;
       }
-      const ciphertext = CryptoJS.AES.encrypt(text, password).toString();
-      document.getElementById("output").value = ciphertext;
+
+      // إنشاء Salt عشوائي
+      const salt = CryptoJS.lib.WordArray.random(128/8);
+      
+      // توليد مفتاح باستخدام كلمة المرور والSalt
+      const key = CryptoJS.PBKDF2(password, salt, { keySize: 256/32, iterations: 1000 });
+      
+      // تشفير النص باستخدام المفتاح والSalt
+      const ciphertext = CryptoJS.AES.encrypt(text, key, { iv: salt }).toString();
+      
+      // تخزين الSalt مع النص المشفر
+      const result = {
+        salt: salt.toString(CryptoJS.enc.Base64),
+        ciphertext: ciphertext
+      };
+
+      document.getElementById("output").value = JSON.stringify(result);
       showMessage("تم التشفير بنجاح!");
     }
 
+    // فك تشفير النص باستخدام AES مع Salt
     function decrypt() {
-      const code = document.getElementById("input").value;
+      const result = JSON.parse(document.getElementById("input").value);
       const password = document.getElementById("password").value;
+      
+      if (!password || !result) {
+        showMessage("يرجى إدخال النص وكلمة المرور!");
+        return;
+      }
+
+      // استعادة الSalt والنص المشفر
+      const salt = CryptoJS.enc.Base64.parse(result.salt);
+      const ciphertext = result.ciphertext;
+      
+      // توليد المفتاح باستخدام كلمة المرور والSalt
+      const key = CryptoJS.PBKDF2(password, salt, { keySize: 256/32, iterations: 1000 });
+      
       try {
-        const bytes = CryptoJS.AES.decrypt(code, password);
+        // فك تشفير النص
+        const bytes = CryptoJS.AES.decrypt(ciphertext, key, { iv: salt });
         const originalText = bytes.toString(CryptoJS.enc.Utf8);
+        
         if (!originalText) throw new Error();
+        
         document.getElementById("output").value = originalText;
         showMessage("تم فك التشفير بنجاح!");
       } catch {
@@ -170,6 +190,7 @@
       }
     }
 
+    // نسخ النتيجة
     function copyResult() {
       const output = document.getElementById("output");
       output.select();
@@ -177,6 +198,7 @@
       showMessage("تم النسخ!");
     }
 
+    // مشاركة النتيجة عبر واتساب
     function shareWhatsApp() {
       const text = document.getElementById("output").value;
       if (!text) {
@@ -187,6 +209,7 @@
       window.open(url, "_blank");
     }
 
+    // عرض الرسائل
     function showMessage(message) {
       const statusMessage = document.getElementById("statusMessage");
       statusMessage.textContent = message;
