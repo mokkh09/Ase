@@ -75,14 +75,15 @@
     #users {
       background-color: #111;
       color: #00FF00;
-      width: 200px;
-      height: 300px;
+      width: 90%;
+      max-width: 600px;
+      height: 150px;
       overflow-y: scroll;
       padding: 15px;
       border-radius: 12px;
       border: 2px solid #00FF00;
-      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
       margin-bottom: 20px;
+      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
     }
 
     footer {
@@ -118,7 +119,7 @@
   <div id="chat"></div>
 
   <div id="users">
-    <h3>المستخدمين:</h3>
+    <h3>المستخدمين الحاليين:</h3>
     <ul id="userList"></ul>
   </div>
 
@@ -129,63 +130,82 @@
     <p class="signature" id="sig">M.Khasroof</p>
   </footer>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
   <script>
-    // Function to load messages from localStorage
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Register user
+    function registerUser() {
+      let user = localStorage.getItem('chatUserName');
+      if (!user) {
+        user = "مستخدم " + new Date().getTime(); // Generate a unique username
+        localStorage.setItem('chatUserName', user);
+      }
+      return user;
+    }
+
+    // Function to load messages from Firebase
     function loadMessages() {
-      const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
       const chatDiv = document.getElementById('chat');
-      chatDiv.innerHTML = ''; // Clear previous messages
-      messages.forEach(message => {
+      chatDiv.innerHTML = '';
+      database.ref('messages').on('child_added', function(snapshot) {
+        const message = snapshot.val();
         const msgElement = document.createElement('div');
-        msgElement.textContent = message.text;
+        msgElement.textContent = `${message.user}: ${message.text}`;
         chatDiv.appendChild(msgElement);
       });
     }
 
-    // Function to load users from localStorage
+    // Function to load users from Firebase
     function loadUsers() {
-      const users = JSON.parse(localStorage.getItem('chatUsers')) || [];
       const userList = document.getElementById('userList');
-      userList.innerHTML = ''; // Clear previous users
-      users.forEach(user => {
+      userList.innerHTML = '';
+      database.ref('users').on('child_added', function(snapshot) {
+        const user = snapshot.val();
         const userElement = document.createElement('li');
         userElement.textContent = user;
         userList.appendChild(userElement);
       });
     }
 
-    // Function to get or set the user's name
-    function getUserName() {
-      let user = localStorage.getItem('chatUserName');
-      if (!user) {
-        user = prompt("أدخل اسمك:");
-        if (user) {
-          localStorage.setItem('chatUserName', user); // Store the name for future sessions
-        }
-      }
-      return user;
-    }
-
-    // Function to send a message
+    // Send message to Firebase
     function sendMessage() {
       const messageInput = document.getElementById('messageInput');
       const message = messageInput.value.trim();
-      const user = getUserName(); // Get the user's name once and reuse it
-      if (message === '' || !user) return; // Ignore empty messages or missing user
-      const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-      messages.push({ text: message, user: user });
-      localStorage.setItem('chatMessages', JSON.stringify(messages)); // Save messages to localStorage
+      const user = registerUser();
+      if (message === '') return;
 
-      const users = JSON.parse(localStorage.getItem('chatUsers')) || [];
-      if (!users.includes(user)) {
-        users.push(user);
-        localStorage.setItem('chatUsers', JSON.stringify(users)); // Save users to localStorage
-      }
+      database.ref('messages').push({
+        text: message,
+        user: user
+      });
 
-      loadMessages(); // Reload messages
-      loadUsers(); // Reload users
-      messageInput.value = ''; // Clear input
-      messageInput.focus(); // Focus back on input
+      // Add user to the list if they aren't already there
+      const usersRef = database.ref('users');
+      usersRef.once('value', function(snapshot) {
+        const users = snapshot.val() || {};
+        if (!Object.values(users).includes(user)) {
+          usersRef.push(user);
+        }
+      });
+
+      messageInput.value = '';
     }
 
     // Load messages and users when the page is loaded
@@ -193,7 +213,6 @@
       loadMessages();
       loadUsers();
     }
-
   </script>
 
 </body>
