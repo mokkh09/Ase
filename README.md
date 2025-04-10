@@ -1,15 +1,15 @@
 <!M.Khasroof!>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <title>تشفير النص | AES</title>
+  <meta charset="UTF-8" />
+  <title>تشفير النصوص | AES</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-
     body {
       font-family: 'Share Tech Mono', monospace;
-      background-color: #1A1A1D;
+      background-color: #0d0d0d;
+      background-image: radial-gradient(circle at center, #111 0%, #000 100%);
       color: #F1F1F1;
       display: flex;
       flex-direction: column;
@@ -18,7 +18,6 @@
       min-height: 100vh;
       justify-content: center;
       text-align: center;
-      background-image: radial-gradient(circle at center, #111 0%, #000 100%);
     }
 
     h2 {
@@ -70,12 +69,43 @@
       margin-top: 20px;
     }
 
+    .chat-log {
+      width: 90%;
+      max-width: 600px;
+      background-color: #111;
+      border: 2px solid #00FF00;
+      border-radius: 12px;
+      padding: 15px;
+      margin-top: 30px;
+      box-shadow: 0 0 10px #00FF00;
+      text-align: left;
+      overflow-y: auto;
+      max-height: 300px;
+    }
+
+    .chat-entry {
+      background-color: #000;
+      color: #00FF00;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 10px;
+      border-left: 4px solid #00FF00;
+    }
+
+    #statusMessage {
+      margin-top: 20px;
+      color: #FF0000;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
     footer {
       margin-top: 40px;
       text-align: center;
     }
 
     .signature-title {
+      font-family: 'Share Tech Mono', monospace;
       font-size: 18px;
       color: #00FF00;
     }
@@ -95,37 +125,20 @@
         text-shadow: 0 0 15px #00FF00, 0 0 30px #00FF00;
       }
     }
-
-    #statusMessage {
-      margin-top: 20px;
-      color: #FF0000;
-      font-size: 20px;
-      font-weight: bold;
-    }
-
-    #logContainer {
-      margin-top: 50px;
-      background: #0f0f0f;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #00FF00;
-      max-width: 600px;
-      width: 90%;
-    }
   </style>
 </head>
 <body>
 
-  <h2>تشفير النص | AES</h2>
+  <h2>تشفير النصوص | AES</h2>
 
   <input id="password" type="password" placeholder="كلمة المرور السرّية" />
   <textarea id="input" placeholder="اكتب النص هنا..."></textarea>
 
   <div class="action-buttons">
-    <button onclick="encrypt();">تشفير النص</button>
-    <button onclick="decrypt();">فك التشفير</button>
-    <button onclick="copyResult();">نسخ</button>
-    <button onclick="shareWhatsApp();">مشاركة واتساب</button>
+    <button onclick="encrypt()">تشفير النص</button>
+    <button onclick="decrypt()">فك التشفير</button>
+    <button onclick="copyResult()">نسخ</button>
+    <button onclick="shareWhatsApp()">مشاركة واتساب</button>
   </div>
 
   <h3>النتيجة:</h3>
@@ -133,7 +146,7 @@
 
   <div id="statusMessage"></div>
 
-  <div id="logContainer"></div>
+  <div id="chatLog" class="chat-log"></div>
 
   <footer>
     <p class="signature-title">Coded by</p>
@@ -141,50 +154,17 @@
   </footer>
 
   <script>
-    // تسجيل الدخول
-    document.addEventListener("DOMContentLoaded", () => {
-      const visits = JSON.parse(localStorage.getItem("visits") || "[]");
-      const newVisit = {
-        time: new Date().toLocaleString(),
-        action: "دخل الموقع"
-      };
-      visits.push(newVisit);
-      localStorage.setItem("visits", JSON.stringify(visits));
-      renderLog();
-    });
-
-    // تسجيل الكتابة
-    document.getElementById("input").addEventListener("input", () => {
-      const visits = JSON.parse(localStorage.getItem("visits") || "[]");
-      const text = document.getElementById("input").value;
-      if (text.length > 0) {
-        visits.push({
-          time: new Date().toLocaleString(),
-          action: "كتب: " + text.slice(0, 30) + "..."
-        });
-        localStorage.setItem("visits", JSON.stringify(visits));
-        renderLog();
-      }
-    });
-
-    function renderLog() {
-      const logContainer = document.getElementById("logContainer");
-      const visits = JSON.parse(localStorage.getItem("visits") || "[]");
-      logContainer.innerHTML = "<h3>سجل النشاط:</h3>" + visits.slice(-10).reverse().map(v => `
-        <p style="font-size: 14px; color: #00FF00;">[${v.time}] ${v.action}</p>
-      `).join("");
-    }
-
     function encrypt() {
       const text = document.getElementById("input").value;
       const password = document.getElementById("password").value;
-      if (!password || !text) {
+      if (!text || !password) {
         showMessage("يرجى إدخال النص وكلمة المرور!");
         return;
       }
       const ciphertext = CryptoJS.AES.encrypt(text, password).toString();
       document.getElementById("output").value = ciphertext;
-      showMessage("تم التشفير بنجاح!");
+      showMessage("تم التشفير!");
+      logUserMessage(text);
     }
 
     function decrypt() {
@@ -195,7 +175,7 @@
         const originalText = bytes.toString(CryptoJS.enc.Utf8);
         if (!originalText) throw new Error();
         document.getElementById("output").value = originalText;
-        showMessage("تم فك التشفير بنجاح!");
+        showMessage("تم فك التشفير!");
       } catch {
         showMessage("فشل فك التشفير! تأكد من النص وكلمة المرور.");
       }
@@ -218,13 +198,24 @@
       window.open(url, "_blank");
     }
 
-    function showMessage(message) {
-      const statusMessage = document.getElementById("statusMessage");
-      statusMessage.textContent = message;
+    function logUserMessage(text) {
+      const chatLog = document.getElementById("chatLog");
+      for (let i = 0; i < 3; i++) {
+        const entry = document.createElement("div");
+        entry.className = "chat-entry";
+        entry.textContent = `مستخدم كتب: ${text}`;
+        chatLog.appendChild(entry);
+      }
+    }
+
+    function showMessage(msg) {
+      const status = document.getElementById("statusMessage");
+      status.textContent = msg;
       setTimeout(() => {
-        statusMessage.textContent = '';
+        status.textContent = "";
       }, 3000);
     }
   </script>
+
 </body>
 </html>
