@@ -1,199 +1,188 @@
-<!M.K><html lang="ar" dir="rtl">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>تشفير ودردشة | M.Khasroof</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <title>دردشة عامة</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');body {
-  font-family: 'Share Tech Mono', monospace;
-  background-color: #1A1A1D;
-  color: #F1F1F1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 30px;
-  min-height: 100vh;
-  justify-content: center;
-  text-align: center;
-  background-image: radial-gradient(circle at center, #111 0%, #000 100%);
-}
-
-h2, h3 {
-  font-size: 28px;
-  color: #00FF00;
-  text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-  margin-bottom: 20px;
-}
-
-textarea, input {
-  background-color: #111;
-  color: #00FF00;
-  width: 90%;
-  max-width: 600px;
-  padding: 15px;
-  font-size: 18px;
-  margin-bottom: 20px;
-  border-radius: 12px;
-  border: 2px solid #00FF00;
-  resize: vertical;
-  box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-}
-
-button {
-  padding: 15px 30px;
-  margin: 10px;
-  border: 2px solid #00FF00;
-  border-radius: 12px;
-  background-color: #000;
-  color: #00FF00;
-  font-size: 18px;
-  cursor: pointer;
-  box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-  transition: transform 0.2s, background-color 0.3s;
-}
-
-button:hover {
-  background-color: #00FF00;
-  color: #000;
-  transform: scale(1.1);
-}
-
-#output {
-  background-color: #111;
-  color: #F1F1F1;
-}
-
-#statusMessage {
-  margin-top: 20px;
-  color: #FF0000;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-footer {
-  margin-top: 40px;
-  text-align: center;
-}
-
-.signature-title {
-  font-size: 18px;
-  color: #00FF00;
-}
-
-.signature {
-  font-size: 22px;
-  color: #00FF00;
-  text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-  animation: glow 2s infinite alternate;
-}
-
-@keyframes glow {
-  from { text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00; }
-  to { text-shadow: 0 0 15px #00FF00, 0 0 30px #00FF00; }
-}
-
-#publicChatBox {
-  width: 90%;
-  max-width: 600px;
-  margin-top: 40px;
-  background-color: #111;
-  border: 2px solid #00FF00;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 0 10px #00FF00;
-}
-
-#publicChatLog {
-  background-color: #000;
-  color: #00FF00;
-  height: 200px;
-  overflow-y: auto;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #00FF00;
-  text-align: right;
-}
-
-#publicMessage {
-  width: calc(100% - 110px);
-  display: inline-block;
-  padding: 10px;
-  background-color: #111;
-  color: #00FF00;
-  border: 2px solid #00FF00;
-  border-radius: 8px;
-  font-size: 16px;
-}
-
-#publicChatBox button {
-  padding: 10px 20px;
-  margin-left: 10px;
-}
-
-  </style>
-</head>
-<body>  <h2>تشفير النص | AES</h2>  <input id="password" type="password" placeholder="كلمة المرور السرّية" />
-  <textarea id="input" placeholder="اكتب النص هنا..."></textarea>  <div>
-    <button onclick="encrypt()">تشفير</button>
-    <button onclick="decrypt()">فك التشفير</button>
-    <button onclick="copyResult()">نسخ</button>
-  </div>  <h3>النتيجة:</h3>
-  <textarea id="output" readonly></textarea>
-  <div id="statusMessage"></div>  <h3>الدردشة العامة</h3>
-  <div id="publicChatBox">
-    <div id="publicChatLog"></div>
-    <input type="text" id="publicMessage" placeholder="اكتب رسالتك هنا..." />
-    <button onclick="sendPublicMessage()">إرسال</button>
-  </div>  <footer>
-    <p class="signature-title">Coded by</p>
-    <p class="signature">M.Khasroof</p>
-  </footer>  <script>
-    function encrypt() {
-      const text = document.getElementById("input").value;
-      const password = document.getElementById("password").value;
-      const ciphertext = CryptoJS.AES.encrypt(text, password).toString();
-      document.getElementById("output").value = ciphertext;
-      showMessage("تم التشفير بنجاح!");
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background-color: #1A1A1D;
+      color: #F1F1F1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+      min-height: 100vh;
+      justify-content: center;
+      text-align: center;
+      background-image: radial-gradient(circle at center, #111 0%, #000 100%);
     }
 
-    function decrypt() {
-      const code = document.getElementById("input").value;
-      const password = document.getElementById("password").value;
-      try {
-        const bytes = CryptoJS.AES.decrypt(code, password);
-        const originalText = bytes.toString(CryptoJS.enc.Utf8);
-        if (!originalText) throw new Error();
-        document.getElementById("output").value = originalText;
-        showMessage("تم فك التشفير بنجاح!");
-      } catch {
-        showMessage("فشل فك التشفير! تأكد من النص وكلمة المرور.");
+    h2 {
+      font-size: 34px;
+      color: #00FF00;
+      text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+      margin-bottom: 20px;
+    }
+
+    #messageInput {
+      background-color: #111;
+      color: #00FF00;
+      width: 80%;
+      max-width: 600px;
+      padding: 15px;
+      font-size: 18px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      border: 2px solid #00FF00;
+      resize: vertical;
+      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+    }
+
+    button {
+      padding: 15px 30px;
+      margin: 10px;
+      border: 2px solid #00FF00;
+      border-radius: 12px;
+      background-color: #000;
+      color: #00FF00;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+      transition: transform 0.2s, background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #00FF00;
+      color: #000;
+      transform: scale(1.1);
+    }
+
+    #chat {
+      background-color: #111;
+      color: #F1F1F1;
+      width: 90%;
+      max-width: 600px;
+      height: 300px;
+      overflow-y: scroll;
+      padding: 15px;
+      border-radius: 12px;
+      border: 2px solid #00FF00;
+      margin-bottom: 20px;
+      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+    }
+
+    #users {
+      background-color: #111;
+      color: #00FF00;
+      width: 200px;
+      height: 300px;
+      overflow-y: scroll;
+      padding: 15px;
+      border-radius: 12px;
+      border: 2px solid #00FF00;
+      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+      margin-bottom: 20px;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .signature {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 22px;
+      color: #00FF00;
+      text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+      animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00;
+      }
+      to {
+        text-shadow: 0 0 15px #00FF00, 0 0 30px #00FF00;
       }
     }
 
-    function copyResult() {
-      const output = document.getElementById("output");
-      output.select();
-      document.execCommand("copy");
-      showMessage("تم النسخ!");
+  </style>
+</head>
+<body>
+
+  <h2>دردشة عامة</h2>
+
+  <div id="chat"></div>
+
+  <div id="users">
+    <h3>المستخدمين:</h3>
+    <ul id="userList"></ul>
+  </div>
+
+  <input id="messageInput" type="text" placeholder="اكتب رسالتك هنا..." />
+  <button onclick="sendMessage()">إرسال الرسالة</button>
+
+  <footer>
+    <p class="signature" id="sig">M.Khasroof</p>
+  </footer>
+
+  <script>
+    // Function to load messages from localStorage
+    function loadMessages() {
+      const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+      const chatDiv = document.getElementById('chat');
+      chatDiv.innerHTML = ''; // Clear previous messages
+      messages.forEach(message => {
+        const msgElement = document.createElement('div');
+        msgElement.textContent = message.text;
+        chatDiv.appendChild(msgElement);
+      });
     }
 
-    function showMessage(message) {
-      const status = document.getElementById("statusMessage");
-      status.textContent = message;
-      setTimeout(() => status.textContent = '', 3000);
+    // Function to load users from localStorage
+    function loadUsers() {
+      const users = JSON.parse(localStorage.getItem('chatUsers')) || [];
+      const userList = document.getElementById('userList');
+      userList.innerHTML = ''; // Clear previous users
+      users.forEach(user => {
+        const userElement = document.createElement('li');
+        userElement.textContent = user;
+        userList.appendChild(userElement);
+      });
     }
 
-    function sendPublicMessage() {
-      const input = document.getElementById("publicMessage");
-      const msg = input.value.trim();
-      if (!msg) return;
-      const log = document.getElementById("publicChatLog");
-      const line = document.createElement("div");
-      line.textContent = `مستخدم: ${msg}`;
-      log.appendChild(line);
-      log.scrollTop = log.scrollHeight;
-      input.value = "";
+    // Function to send a message
+    function sendMessage() {
+      const messageInput = document.getElementById('messageInput');
+      const message = messageInput.value.trim();
+      const user = prompt("أدخل اسمك:");
+      if (message === '' || !user) return; // Ignore empty messages or missing user
+      const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+      messages.push({ text: message, user: user });
+      localStorage.setItem('chatMessages', JSON.stringify(messages)); // Save messages to localStorage
+
+      const users = JSON.parse(localStorage.getItem('chatUsers')) || [];
+      if (!users.includes(user)) {
+        users.push(user);
+        localStorage.setItem('chatUsers', JSON.stringify(users)); // Save users to localStorage
+      }
+
+      loadMessages(); // Reload messages
+      loadUsers(); // Reload users
+      messageInput.value = ''; // Clear input
+      messageInput.focus(); // Focus back on input
     }
-  </script></body>
+
+    // Load messages and users when the page is loaded
+    window.onload = function() {
+      loadMessages();
+      loadUsers();
+    }
+
+  </script>
+
+</body>
 </html>
