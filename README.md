@@ -1,11 +1,13 @@
-<!>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>دردشة عامة</title>
+  <title>الدردشة | Firebase</title>
+  <script src="https://www.gstatic.com/firebasejs/8.3.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.3.2/firebase-database.js"></script>
   <style>
     body {
-      font-family: 'Share Tech Mono', monospace;
+      font-family: 'Arial', sans-serif;
       background-color: #1A1A1D;
       color: #F1F1F1;
       display: flex;
@@ -15,20 +17,18 @@
       min-height: 100vh;
       justify-content: center;
       text-align: center;
-      background-image: radial-gradient(circle at center, #111 0%, #000 100%);
     }
 
     h2 {
       font-size: 34px;
       color: #00FF00;
-      text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
       margin-bottom: 20px;
     }
 
-    #messageInput {
+    textarea, input {
       background-color: #111;
       color: #00FF00;
-      width: 80%;
+      width: 90%;
       max-width: 600px;
       padding: 15px;
       font-size: 18px;
@@ -36,7 +36,6 @@
       border-radius: 12px;
       border: 2px solid #00FF00;
       resize: vertical;
-      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
     }
 
     button {
@@ -48,42 +47,23 @@
       color: #00FF00;
       font-size: 18px;
       cursor: pointer;
-      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-      transition: transform 0.2s, background-color 0.3s;
     }
 
     button:hover {
       background-color: #00FF00;
       color: #000;
-      transform: scale(1.1);
     }
 
-    #chat {
+    .messages {
+      width: 90%;
+      max-width: 600px;
       background-color: #111;
+      padding: 15px;
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: scroll;
       color: #F1F1F1;
-      width: 90%;
-      max-width: 600px;
-      height: 300px;
-      overflow-y: scroll;
-      padding: 15px;
       border-radius: 12px;
-      border: 2px solid #00FF00;
-      margin-bottom: 20px;
-      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-    }
-
-    #users {
-      background-color: #111;
-      color: #00FF00;
-      width: 90%;
-      max-width: 600px;
-      height: 150px;
-      overflow-y: scroll;
-      padding: 15px;
-      border-radius: 12px;
-      border: 2px solid #00FF00;
-      margin-bottom: 20px;
-      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
     }
 
     footer {
@@ -91,51 +71,27 @@
       bottom: 20px;
       width: 100%;
       text-align: center;
-    }
-
-    .signature {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 22px;
       color: #00FF00;
-      text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-      animation: glow 2s infinite alternate;
     }
-
-    @keyframes glow {
-      from {
-        text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00;
-      }
-      to {
-        text-shadow: 0 0 15px #00FF00, 0 0 30px #00FF00;
-      }
-    }
-
   </style>
 </head>
 <body>
 
-  <h2>دردشة عامة</h2>
+  <h2>الدردشة | Firebase</h2>
 
-  <div id="chat"></div>
+  <input id="username" type="text" placeholder="أدخل اسمك" />
+  <textarea id="messageInput" placeholder="اكتب رسالتك هنا..."></textarea>
 
-  <div id="users">
-    <h3>المستخدمين الحاليين:</h3>
-    <ul id="userList"></ul>
-  </div>
-
-  <input id="messageInput" type="text" placeholder="اكتب رسالتك هنا..." />
   <button onclick="sendMessage()">إرسال الرسالة</button>
 
+  <div class="messages" id="messages"></div>
+
   <footer>
-    <p class="signature" id="sig">M.Khasroof</p>
+    <p>مطور: M.Khasroof</p>
   </footer>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
   <script>
-    // Firebase Configuration
+    // إعدادات Firebase
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_AUTH_DOMAIN",
@@ -146,76 +102,37 @@
       appId: "YOUR_APP_ID"
     };
 
-    // Initialize Firebase
+    // تهيئة Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Register user and store unique user ID in localStorage
-    function registerUser() {
-      let user = localStorage.getItem('chatUserName');
-      if (!user) {
-        user = "مستخدم " + new Date().getTime(); // Generate a unique username
-        localStorage.setItem('chatUserName', user);
-      }
-      return user;
-    }
-
-    // Function to load messages from Firebase
-    function loadMessages() {
-      const chatDiv = document.getElementById('chat');
-      chatDiv.innerHTML = '';  // Clear the chat before reloading
-      database.ref('messages').on('child_added', function(snapshot) {
-        const message = snapshot.val();
-        const msgElement = document.createElement('div');
-        msgElement.textContent = `${message.user}: ${message.text}`;
-        chatDiv.appendChild(msgElement);
-        chatDiv.scrollTop = chatDiv.scrollHeight;  // Auto-scroll to the bottom
-      });
-    }
-
-    // Function to load users from Firebase
-    function loadUsers() {
-      const userList = document.getElementById('userList');
-      userList.innerHTML = ''; // Clear the user list before reloading
-      database.ref('users').on('child_added', function(snapshot) {
-        const user = snapshot.val();
-        const userElement = document.createElement('li');
-        userElement.textContent = user;
-        userList.appendChild(userElement);
-      });
-    }
-
-    // Send message to Firebase
+    // إرسال الرسالة
     function sendMessage() {
-      const messageInput = document.getElementById('messageInput');
-      const message = messageInput.value.trim();
-      const user = registerUser();
+      const username = document.getElementById("username").value;
+      const message = document.getElementById("messageInput").value;
+      
+      if (username && message) {
+        // حفظ الرسالة في قاعدة البيانات
+        database.ref('messages').push({
+          username: username,
+          message: message,
+          timestamp: new Date().toISOString()
+        });
 
-      if (message === '') return;  // Don't send empty messages
-
-      // Push message to Firebase
-      database.ref('messages').push({
-        text: message,
-        user: user
-      });
-
-      // Add user to the list if they aren't already there
-      const usersRef = database.ref('users');
-      usersRef.once('value', function(snapshot) {
-        const users = snapshot.val() || {};
-        if (!Object.values(users).includes(user)) {
-          usersRef.push(user);
-        }
-      });
-
-      messageInput.value = '';  // Clear the input field after sending
+        // مسح النص بعد الإرسال
+        document.getElementById("messageInput").value = '';
+      } else {
+        alert('يرجى إدخال اسمك والرسالة!');
+      }
     }
 
-    // Load messages and users when the page is loaded
-    window.onload = function() {
-      loadMessages();
-      loadUsers();
-    }
+    // استرجاع الرسائل وعرضها
+    database.ref('messages').on('child_added', function(snapshot) {
+      const messageData = snapshot.val();
+      const messageElement = document.createElement('div');
+      messageElement.textContent = `${messageData.username}: ${messageData.message}`;
+      document.getElementById('messages').appendChild(messageElement);
+    });
   </script>
 
 </body>
