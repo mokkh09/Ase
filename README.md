@@ -125,6 +125,7 @@
     <button onclick="encrypt();">تشفير النص</button>
     <button onclick="decrypt();">فك التشفير</button>
     <button onclick="copyResult();">نسخ</button>
+    <button onclick="shareWhatsApp();">مشاركة واتساب</button>
   </div>
 
   <h3>النتيجة:</h3>
@@ -150,6 +151,13 @@
       visits.push(newVisit);
       localStorage.setItem("visits", JSON.stringify(visits));
       renderLog();
+
+      // إذا كان هناك نص مشترك من واتساب
+      const urlParams = new URLSearchParams(window.location.search);
+      const sharedText = urlParams.get('text');
+      if (sharedText) {
+        document.getElementById('input').value = decodeURIComponent(sharedText);
+      }
     });
 
     // تسجيل الكتابة
@@ -205,6 +213,16 @@
       output.select();
       document.execCommand("copy");
       showMessage("تم النسخ!");
+    }
+
+    function shareWhatsApp() {
+      const text = document.getElementById("output").value;
+      if (!text) {
+        alert("لا يوجد نص للمشاركة!");
+        return;
+      }
+      const url = "https://wa.me/?text=" + encodeURIComponent(text);
+      window.open(url, "_blank");
     }
 
     function showMessage(message) {
