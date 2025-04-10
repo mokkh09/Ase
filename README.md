@@ -2,153 +2,154 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>الدردشة | Firebase</title>
-  <script src="https://www.gstatic.com/firebasejs/8.3.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.3.2/firebase-database.js"></script>
+  <title>دردشة شبيهة بالواتساب</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background-color: #1A1A1D;
-      color: #F1F1F1;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
       display: flex;
       flex-direction: column;
+      justify-content: flex-end;
       align-items: center;
-      padding: 30px;
       min-height: 100vh;
-      justify-content: center;
-      text-align: center;
+      margin: 0;
     }
 
-    h2 {
-      font-size: 34px;
-      color: #00FF00;
-      margin-bottom: 20px;
-    }
-
-    textarea, input {
-      background-color: #111;
-      color: #00FF00;
-      width: 90%;
+    #chatContainer {
+      width: 100%;
       max-width: 600px;
-      padding: 15px;
-      font-size: 18px;
-      margin-bottom: 20px;
-      border-radius: 12px;
-      border: 2px solid #00FF00;
-      resize: vertical;
+      background-color: #fff;
+      box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      margin-top: 50px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
-    button {
-      padding: 15px 30px;
-      margin: 10px;
-      border: 2px solid #00FF00;
-      border-radius: 12px;
-      background-color: #000;
-      color: #00FF00;
-      font-size: 18px;
+    #messages {
+      padding: 20px;
+      overflow-y: auto;
+      height: 400px;
+    }
+
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 10px;
+      max-width: 75%;
+      word-wrap: break-word;
+    }
+
+    .message.sent {
+      background-color: #e1ffc7;
+      align-self: flex-end;
+    }
+
+    .message.received {
+      background-color: #f1f1f1;
+      align-self: flex-start;
+    }
+
+    .inputContainer {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      background-color: #eee;
+    }
+
+    #inputMessage {
+      width: 85%;
+      padding: 10px;
+      border: none;
+      border-radius: 20px;
+      background-color: #fff;
+    }
+
+    #sendButton {
+      width: 10%;
+      padding: 10px;
+      background-color: #128C7E;
+      color: white;
+      border: none;
+      border-radius: 50%;
       cursor: pointer;
     }
 
-    button:hover {
-      background-color: #00FF00;
-      color: #000;
-    }
-
-    .messages {
-      width: 90%;
-      max-width: 600px;
-      background-color: #111;
-      padding: 15px;
-      margin-top: 20px;
-      max-height: 300px;
-      overflow-y: scroll;
-      color: #F1F1F1;
-      border-radius: 12px;
-    }
-
     footer {
-      position: fixed;
-      bottom: 20px;
+      background-color: #128C7E;
+      color: white;
       width: 100%;
       text-align: center;
-      color: #00FF00;
+      padding: 5px;
+      position: fixed;
+      bottom: 0;
     }
   </style>
 </head>
 <body>
-
-  <h2>غرفة الدردشة | Firebase</h2>
-
-  <input id="username" type="text" placeholder="أدخل اسمك" />
-  <input id="roomID" type="text" placeholder="أدخل معرف الغرفة (على سبيل المثال: room1)" />
-  <textarea id="messageInput" placeholder="اكتب رسالتك هنا..."></textarea>
-
-  <button onclick="sendMessage()">إرسال الرسالة</button>
-
-  <div class="messages" id="messages"></div>
+  <div id="chatContainer">
+    <div id="messages"></div>
+    <div class="inputContainer">
+      <input type="text" id="inputMessage" placeholder="اكتب رسالتك هنا..." />
+      <button id="sendButton" onclick="sendMessage()">إرسال</button>
+    </div>
+  </div>
 
   <footer>
-    <p>مطور: M.Khasroof</p>
+    <p>مطور بواسطة M.Khasroof</p>
   </footer>
 
   <script>
-    // إعدادات Firebase
+    // Firebase configuration
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      databaseURL: "YOUR_DATABASE_URL",
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
+      databaseURL: "YOUR_FIREBASE_DATABASE_URL",
       projectId: "YOUR_PROJECT_ID",
       storageBucket: "YOUR_STORAGE_BUCKET",
       messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
       appId: "YOUR_APP_ID"
     };
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database(app);
 
-    // تهيئة Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    const roomId = "chat_room_1"; // Room ID for the chat
 
-    // إرسال الرسالة
     function sendMessage() {
-      const username = document.getElementById("username").value;
-      const roomID = document.getElementById("roomID").value;
-      const message = document.getElementById("messageInput").value;
-      
-      if (username && roomID && message) {
-        // حفظ الرسالة في قاعدة البيانات ضمن الغرفة المحددة
-        const messagesRef = database.ref('rooms/' + roomID + '/messages');
-        messagesRef.push({
-          username: username,
-          message: message,
-          timestamp: new Date().toISOString()
-        }).then(() => {
-          // مسح النص بعد الإرسال
-          document.getElementById("messageInput").value = '';
-        }).catch((error) => {
-          console.error("Error writing message to Firebase: ", error);
-        });
-      } else {
-        alert('يرجى إدخال اسمك، معرف الغرفة والرسالة!');
+      const inputMessage = document.getElementById("inputMessage");
+      const messageText = inputMessage.value.trim();
+
+      if (messageText !== "") {
+        // Save the message to Firebase
+        const message = {
+          text: messageText,
+          timestamp: new Date().toISOString(),
+          sender: "User", // You can add dynamic user name
+        };
+
+        // Save message to Firebase Database
+        database.ref("messages/" + roomId).push(message);
+
+        inputMessage.value = ""; // Clear the input field
       }
     }
 
-    // استرجاع الرسائل وعرضها في غرفة الدردشة
-    function loadMessages() {
-      const roomID = document.getElementById("roomID").value;
-      
-      if (roomID) {
-        const messagesRef = database.ref('rooms/' + roomID + '/messages');
-        messagesRef.on('child_added', function(snapshot) {
-          const messageData = snapshot.val();
-          const messageElement = document.createElement('div');
-          messageElement.textContent = `${messageData.username}: ${messageData.message}`;
-          document.getElementById('messages').appendChild(messageElement);
-        });
-      }
-    }
+    // Fetch messages from Firebase and display them
+    database.ref("messages/" + roomId).on("child_added", function(snapshot) {
+      const message = snapshot.val();
+      const messageElement = document.createElement("div");
+      messageElement.classList.add("message");
+      messageElement.classList.add(message.sender === "User" ? "sent" : "received");
 
-    // عند تغيير معرف الغرفة، نقوم بتحميل الرسائل من جديد
-    document.getElementById("roomID").addEventListener('input', loadMessages);
+      messageElement.textContent = message.text;
+
+      document.getElementById("messages").appendChild(messageElement);
+      document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight; // Scroll to bottom
+    });
   </script>
-
 </body>
 </html>
