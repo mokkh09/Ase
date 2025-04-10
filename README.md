@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>دردشة شبيهة بالواتساب</title>
+  <title>دردشة مع التشفير</title>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
@@ -118,15 +118,19 @@
     const database = firebase.database(app);
 
     const roomId = "chat_room_1"; // Room ID for the chat
+    const secretKey = "your-secret-key"; // Key for AES encryption
 
     function sendMessage() {
       const inputMessage = document.getElementById("inputMessage");
       const messageText = inputMessage.value.trim();
 
       if (messageText !== "") {
-        // Save the message to Firebase
+        // Encrypt the message using AES
+        const encryptedMessage = CryptoJS.AES.encrypt(messageText, secretKey).toString();
+
+        // Save the encrypted message to Firebase
         const message = {
-          text: messageText,
+          text: encryptedMessage,
           timestamp: new Date().toISOString(),
           sender: "User", // You can add dynamic user name
         };
@@ -138,14 +142,16 @@
       }
     }
 
-    // Fetch messages from Firebase and display them
+    // Fetch messages from Firebase and decrypt them
     database.ref("messages/" + roomId).on("child_added", function(snapshot) {
       const message = snapshot.val();
+      const decryptedMessage = CryptoJS.AES.decrypt(message.text, secretKey).toString(CryptoJS.enc.Utf8);
+
       const messageElement = document.createElement("div");
       messageElement.classList.add("message");
       messageElement.classList.add(message.sender === "User" ? "sent" : "received");
 
-      messageElement.textContent = message.text;
+      messageElement.textContent = decryptedMessage;
 
       document.getElementById("messages").appendChild(messageElement);
       document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight; // Scroll to bottom
