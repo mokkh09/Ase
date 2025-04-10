@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -150,7 +150,7 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Register user
+    // Register user and store unique user ID in localStorage
     function registerUser() {
       let user = localStorage.getItem('chatUserName');
       if (!user) {
@@ -163,19 +163,20 @@
     // Function to load messages from Firebase
     function loadMessages() {
       const chatDiv = document.getElementById('chat');
-      chatDiv.innerHTML = '';
+      chatDiv.innerHTML = '';  // Clear the chat before reloading
       database.ref('messages').on('child_added', function(snapshot) {
         const message = snapshot.val();
         const msgElement = document.createElement('div');
         msgElement.textContent = `${message.user}: ${message.text}`;
         chatDiv.appendChild(msgElement);
+        chatDiv.scrollTop = chatDiv.scrollHeight;  // Auto-scroll to the bottom
       });
     }
 
     // Function to load users from Firebase
     function loadUsers() {
       const userList = document.getElementById('userList');
-      userList.innerHTML = '';
+      userList.innerHTML = ''; // Clear the user list before reloading
       database.ref('users').on('child_added', function(snapshot) {
         const user = snapshot.val();
         const userElement = document.createElement('li');
@@ -189,8 +190,10 @@
       const messageInput = document.getElementById('messageInput');
       const message = messageInput.value.trim();
       const user = registerUser();
-      if (message === '') return;
 
+      if (message === '') return;  // Don't send empty messages
+
+      // Push message to Firebase
       database.ref('messages').push({
         text: message,
         user: user
@@ -205,7 +208,7 @@
         }
       });
 
-      messageInput.value = '';
+      messageInput.value = '';  // Clear the input field after sending
     }
 
     // Load messages and users when the page is loaded
