@@ -1,4 +1,4 @@
-<!M.Khasroof!>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -125,7 +125,6 @@
     <button onclick="encrypt();">تشفير النص</button>
     <button onclick="decrypt();">فك التشفير</button>
     <button onclick="copyResult();">نسخ</button>
-    <button onclick="shareWhatsApp();">مشاركة واتساب</button>
   </div>
 
   <h3>النتيجة:</h3>
@@ -206,16 +205,6 @@
       output.select();
       document.execCommand("copy");
       showMessage("تم النسخ!");
-    }
-
-    function shareWhatsApp() {
-      const text = document.getElementById("output").value;
-      if (!text) {
-        alert("لا يوجد نص للمشاركة!");
-        return;
-      }
-      const url = "https://wa.me/?text=" + encodeURIComponent(text);
-      window.open(url, "_blank");
     }
 
     function showMessage(message) {
