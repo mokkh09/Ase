@@ -77,9 +77,10 @@
 </head>
 <body>
 
-  <h2>الدردشة | Firebase</h2>
+  <h2>غرفة الدردشة | Firebase</h2>
 
   <input id="username" type="text" placeholder="أدخل اسمك" />
+  <input id="roomID" type="text" placeholder="أدخل معرف الغرفة (على سبيل المثال: room1)" />
   <textarea id="messageInput" placeholder="اكتب رسالتك هنا..."></textarea>
 
   <button onclick="sendMessage()">إرسال الرسالة</button>
@@ -109,30 +110,44 @@
     // إرسال الرسالة
     function sendMessage() {
       const username = document.getElementById("username").value;
+      const roomID = document.getElementById("roomID").value;
       const message = document.getElementById("messageInput").value;
       
-      if (username && message) {
-        // حفظ الرسالة في قاعدة البيانات
-        database.ref('messages').push({
+      if (username && roomID && message) {
+        // حفظ الرسالة في قاعدة البيانات ضمن الغرفة المحددة
+        const messagesRef = database.ref('rooms/' + roomID + '/messages');
+        messagesRef.push({
           username: username,
           message: message,
           timestamp: new Date().toISOString()
+        }).then(() => {
+          // مسح النص بعد الإرسال
+          document.getElementById("messageInput").value = '';
+        }).catch((error) => {
+          console.error("Error writing message to Firebase: ", error);
         });
-
-        // مسح النص بعد الإرسال
-        document.getElementById("messageInput").value = '';
       } else {
-        alert('يرجى إدخال اسمك والرسالة!');
+        alert('يرجى إدخال اسمك، معرف الغرفة والرسالة!');
       }
     }
 
-    // استرجاع الرسائل وعرضها
-    database.ref('messages').on('child_added', function(snapshot) {
-      const messageData = snapshot.val();
-      const messageElement = document.createElement('div');
-      messageElement.textContent = `${messageData.username}: ${messageData.message}`;
-      document.getElementById('messages').appendChild(messageElement);
-    });
+    // استرجاع الرسائل وعرضها في غرفة الدردشة
+    function loadMessages() {
+      const roomID = document.getElementById("roomID").value;
+      
+      if (roomID) {
+        const messagesRef = database.ref('rooms/' + roomID + '/messages');
+        messagesRef.on('child_added', function(snapshot) {
+          const messageData = snapshot.val();
+          const messageElement = document.createElement('div');
+          messageElement.textContent = `${messageData.username}: ${messageData.message}`;
+          document.getElementById('messages').appendChild(messageElement);
+        });
+      }
+    }
+
+    // عند تغيير معرف الغرفة، نقوم بتحميل الرسائل من جديد
+    document.getElementById("roomID").addEventListener('input', loadMessages);
   </script>
 
 </body>
