@@ -106,7 +106,7 @@ font-weight: bold;
     <p class="signature-title">Coded by</p>    
     <p class="signature">M.Khasroof</p>    
   </footer>  <script>    
-    const sitePassword = "Khasroof09";  function checkAccess(e) {    
+    const sitePassword = "Kh.09";  function checkAccess(e) {    
   if (e.key === "Enter") {    
     const input = document.getElementById("sitePass").value;    
     if (input === sitePassword) {    
