@@ -86,7 +86,7 @@ M.K
 </head>
 <body>
 
-  <h1>حاسبة M.K</h1>
+  <h1>calculator</h1>
   <div class="calculator">
     <input type="text" id="display" readonly>
     <div class="buttons">
@@ -112,7 +112,7 @@ M.K
 
   <!-- واجهة M.K المخفية -->
   <div id="mkInterface">
-    <h2>تشفير النص | AES</h2>
+    <h2>☆تشفير النص 《M.K》☆</h2>
     <input id="sitePass" type="password" placeholder="ادخل كلمة السر" onkeyup="checkAccess(event)">
     <div id="mainArea" style="display:none">
       <input id="password" type="password" placeholder="كلمة المرور السرّية" />
