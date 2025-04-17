@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+M.K
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
@@ -160,6 +160,7 @@
     function showMK() {
       document.getElementById("mkInterface").style.display = "block";
       document.querySelector(".calculator").style.display = "none";
+      playSound(); // تشغّل الصوت عند الدخول
     }
 
     // --- M.K FUNCTIONS ---
@@ -230,6 +231,18 @@
       status.textContent = msg;
       setTimeout(() => status.textContent = '', 4000);
     }
+
+    // إضافة صوت عند الدخول
+    function playSound() {
+      let audio = new Audio('https://www.soundjay.com/button/beep-07.wav'); // تأكد من وجود الرابط
+      audio.play();
+    }
+
+    // تشويش الكود (Obfuscation) البسيط
+    function btoa(str) {
+      return window.btoa(str); // ترميز Base64 بديل، لتشويش كلمة السر
+    }
+
   </script>
 
 </body>
