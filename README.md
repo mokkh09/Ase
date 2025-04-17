@@ -2,7 +2,7 @@ M.K
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>آلة حاسبة</title>
+  <title>!</title>
   <style>
     body {
       background-color: #000;
