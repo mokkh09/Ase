@@ -1,4 +1,4 @@
-M.K
+<!DOCTYPE html>
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
@@ -164,12 +164,12 @@ M.K
     }
 
     // --- M.K FUNCTIONS ---
-    const encodedPass = "S2guMDk="; // Base64 لـ Kh.09
+    const correctPassword = "Kh.09"; // كلمة السر الصحيحة
 
     function checkAccess(e) {
       if (e.key === "Enter") {
         const input = document.getElementById("sitePass").value;
-        if (btoa(input) === encodedPass) {
+        if (input === correctPassword) {
           document.getElementById("sitePass").style.display = 'none';
           document.getElementById("mainArea").style.display = 'block';
           showMessage("تم الدخول بنجاح!");
@@ -236,11 +236,6 @@ M.K
     function playSound() {
       let audio = new Audio('https://www.soundjay.com/button/beep-07.wav'); // تأكد من وجود الرابط
       audio.play();
-    }
-
-    // تشويش الكود (Obfuscation) البسيط
-    function btoa(str) {
-      return window.btoa(str); // ترميز Base64 بديل، لتشويش كلمة السر
     }
 
   </script>
