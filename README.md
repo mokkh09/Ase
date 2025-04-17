@@ -2,201 +2,178 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>آلة حاسبة M.K</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <title>آلة حاسبة</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-
     body {
-      font-family: 'Share Tech Mono', monospace;
-      background-color: #1A1A1D;
-      color: #F1F1F1;
+      background-color: #000;
+      color: #00ff00;
+      font-family: 'Courier New', monospace;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      min-height: 100vh;
+      justify-content: center;
+      height: 100vh;
       margin: 0;
     }
-
-    .calculator, #mKInterface {
-      background: #000;
+    h1 {
+      text-shadow: 0 0 10px #0f0;
+    }
+    .calculator, #mkInterface {
+      border: 2px solid #0f0;
       padding: 20px;
-      border-radius: 10px;
+      border-radius: 15px;
       box-shadow: 0 0 20px #0f0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 90%;
-      max-width: 600px;
     }
-
-    #display {
-      width: 100%;
-      height: 50px;
-      margin-bottom: 10px;
-      font-size: 24px;
-      text-align: right;
-      padding: 10px;
-      background: #000;
+    input[type="text"] {
+      background: #111;
       color: #0f0;
       border: none;
-      outline: none;
+      padding: 10px;
+      font-size: 24px;
+      width: 250px;
+      margin-bottom: 10px;
+      text-align: right;
+      border-radius: 10px;
     }
-
     .buttons {
       display: grid;
       grid-template-columns: repeat(4, 60px);
       gap: 10px;
     }
-
     button {
-      font-size: 20px;
       padding: 15px;
-      background: #111;
-      border: 1px solid #0f0;
-      border-radius: 5px;
+      font-size: 18px;
+      background: #000;
       color: #0f0;
+      border: 2px solid #0f0;
+      border-radius: 10px;
       cursor: pointer;
+      transition: 0.2s;
     }
-
     button:hover {
-      background: #0f0;
+      background-color: #0f0;
       color: #000;
     }
-
-    #mKInterface {
+    #mkInterface {
       display: none;
-      text-align: center;
+      margin-top: 40px;
     }
-
-    textarea, input[type="password"] {
+    textarea, #mkInterface input[type="password"] {
       background-color: #111;
       color: #00FF00;
       width: 90%;
-      padding: 15px;
-      font-size: 18px;
-      margin: 10px 0;
+      max-width: 400px;
+      padding: 10px;
+      font-size: 16px;
       border-radius: 12px;
       border: 2px solid #00FF00;
       resize: vertical;
-      box-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
+      margin: 10px 0;
     }
-
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
     .action-buttons button {
       margin: 5px;
     }
-
-    .signature {
-      font-size: 22px;
-      color: #00FF00;
-      text-shadow: 0 0 10px #00FF00, 0 0 20px #00FF00;
-      animation: glow 2s infinite alternate;
-    }
-
-    @keyframes glow {
-      from { text-shadow: 0 0 5px #00FF00; }
-      to { text-shadow: 0 0 15px #00FF00; }
-    }
-
-    #statusMessage {
-      color: red;
-      font-weight: bold;
-      margin-top: 10px;
-    }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
 
-  <div class="calculator" id="calculator">
-    <input type="text" id="display" readonly />
+  <h1>حاسبة M.K</h1>
+  <div class="calculator">
+    <input type="text" id="display" readonly>
     <div class="buttons">
+      <button onclick="press('7')">7</button>
+      <button onclick="press('8')">8</button>
+      <button onclick="press('9')">9</button>
+      <button onclick="press('+')">+</button>
+      <button onclick="press('4')">4</button>
+      <button onclick="press('5')">5</button>
+      <button onclick="press('6')">6</button>
+      <button onclick="press('-')">-</button>
+      <button onclick="press('1')">1</button>
+      <button onclick="press('2')">2</button>
+      <button onclick="press('3')">3</button>
+      <button onclick="press('*')">*</button>
+      <button onclick="press('0')">0</button>
       <button onclick="clearDisplay()">C</button>
-      <button onclick="appendValue('(')">(</button>
-      <button onclick="appendValue(')')">)</button>
-      <button onclick="appendValue('/')">÷</button>
-
-      <button onclick="appendValue('7')">7</button>
-      <button onclick="appendValue('8')">8</button>
-      <button onclick="appendValue('9')">9</button>
-      <button onclick="appendValue('*')">×</button>
-
-      <button onclick="appendValue('4')">4</button>
-      <button onclick="appendValue('5')">5</button>
-      <button onclick="appendValue('6')">6</button>
-      <button onclick="appendValue('-')">−</button>
-
-      <button onclick="appendValue('1')">1</button>
-      <button onclick="appendValue('2')">2</button>
-      <button onclick="appendValue('3')">3</button>
-      <button onclick="appendValue('+')">+</button>
-
-      <button onclick="appendValue('0')">0</button>
-      <button onclick="appendValue('.')">.</button>
+      <button onclick="backspace()">←</button>
+      <button onclick="press('/')">/</button>
       <button onclick="calculate()">=</button>
     </div>
   </div>
 
-  <div id="mKInterface">
+  <!-- واجهة M.K المخفية -->
+  <div id="mkInterface">
     <h2>تشفير النص | AES</h2>
-    <input id="sitePass" type="password" placeholder="ادخل كلمة سر الدخول" onkeyup="checkAccess(event)">
+    <input id="sitePass" type="password" placeholder="ادخل كلمة السر" onkeyup="checkAccess(event)">
     <div id="mainArea" style="display:none">
       <input id="password" type="password" placeholder="كلمة المرور السرّية" />
       <textarea id="input" placeholder="اكتب النص هنا..."></textarea>
       <div class="action-buttons">
-        <button onclick="encrypt()">تشفير النص</button>
-        <button onclick="decrypt()">فك التشفير</button>
-        <button onclick="copyResult()">نسخ</button>
-        <button onclick="pasteClipboard()">لصق من الحافظة</button>
-        <button onclick="shareWhatsApp()">مشاركة واتساب</button>
-        <button onclick="clearAll()">مسح الكل</button>
+        <button onclick="encrypt();">تشفير</button>
+        <button onclick="decrypt();">فك التشفير</button>
+        <button onclick="copyResult();">نسخ</button>
+        <button onclick="pasteClipboard();">لصق</button>
+        <button onclick="clearAll();">مسح</button>
       </div>
-      <h3>النتيجة:</h3>
       <textarea id="output" readonly></textarea>
     </div>
     <div id="statusMessage"></div>
-    <footer>
-      <p class="signature">M.Khasroof</p>
-    </footer>
   </div>
 
   <script>
-    function appendValue(value) {
-      document.getElementById('display').value += value;
+    let display = document.getElementById("display");
+
+    function press(val) {
+      display.value += val;
     }
 
     function clearDisplay() {
-      document.getElementById('display').value = '';
+      display.value = "";
+    }
+
+    function backspace() {
+      display.value = display.value.slice(0, -1);
     }
 
     function calculate() {
-      const input = document.getElementById('display').value;
-
-      if (input === '99+00') {
-        document.getElementById('calculator').style.display = 'none';
-        document.getElementById('mKInterface').style.display = 'flex';
-        return;
-      }
-
       try {
-        const result = eval(input);
-        document.getElementById('display').value = result;
+        if (display.value === "99+00") {
+          showMK();
+          clearDisplay();
+        } else {
+          display.value = eval(display.value);
+        }
       } catch {
-        document.getElementById('display').value = 'خطأ';
+        display.value = "خطأ";
       }
     }
 
-    // واجهة M.K
-    const sitePassword = "Kh.09";
+    function showMK() {
+      document.getElementById("mkInterface").style.display = "block";
+      document.querySelector(".calculator").style.display = "none";
+    }
+
+    // --- M.K FUNCTIONS ---
+    const encodedPass = "S2guMDk="; // Base64 لـ Kh.09
 
     function checkAccess(e) {
       if (e.key === "Enter") {
         const input = document.getElementById("sitePass").value;
-        if (input === sitePassword) {
+        if (btoa(input) === encodedPass) {
           document.getElementById("sitePass").style.display = 'none';
           document.getElementById("mainArea").style.display = 'block';
           showMessage("تم الدخول بنجاح!");
         } else {
-          showMessage("كلمة المرور غير صحيحة!");
+          showMessage("كلمة المرور خاطئة!");
         }
       }
     }
@@ -204,23 +181,23 @@
     function encrypt() {
       const text = document.getElementById("input").value;
       const password = document.getElementById("password").value;
-      if (!password || !text) return showMessage("يرجى إدخال النص وكلمة المرور!");
-      const ciphertext = CryptoJS.AES.encrypt(text, password).toString();
-      document.getElementById("output").value = ciphertext;
-      showMessage("تم التشفير بنجاح!");
+      if (!text || !password) return showMessage("يرجى إدخال النص وكلمة المرور");
+      const encrypted = CryptoJS.AES.encrypt(text, password).toString();
+      document.getElementById("output").value = encrypted;
+      showMessage("تم التشفير!");
     }
 
     function decrypt() {
-      const code = document.getElementById("input").value;
+      const encrypted = document.getElementById("input").value;
       const password = document.getElementById("password").value;
       try {
-        const bytes = CryptoJS.AES.decrypt(code, password);
-        const originalText = bytes.toString(CryptoJS.enc.Utf8);
-        if (!originalText) throw new Error();
-        document.getElementById("output").value = originalText;
-        showMessage("تم فك التشفير بنجاح!");
+        const bytes = CryptoJS.AES.decrypt(encrypted, password);
+        const text = bytes.toString(CryptoJS.enc.Utf8);
+        if (!text) throw new Error();
+        document.getElementById("output").value = text;
+        showMessage("تم فك التشفير!");
       } catch {
-        showMessage("فشل فك التشفير! تأكد من النص وكلمة المرور.");
+        showMessage("فك التشفير فشل!");
       }
     }
 
@@ -235,17 +212,10 @@
       try {
         const text = await navigator.clipboard.readText();
         document.getElementById("input").value = text;
-        showMessage("تم اللصق من الحافظة!");
+        showMessage("تم اللصق!");
       } catch {
-        showMessage("لم يتمكن من الوصول للحافظة!");
+        showMessage("لم يتم الوصول للحافظة!");
       }
-    }
-
-    function shareWhatsApp() {
-      const text = document.getElementById("output").value;
-      if (!text) return alert("لا يوجد نص للمشاركة!");
-      const url = "https://wa.me/?text=" + encodeURIComponent(text);
-      window.open(url, "_blank");
     }
 
     function clearAll() {
@@ -255,11 +225,12 @@
       showMessage("تم المسح.");
     }
 
-    function showMessage(message) {
+    function showMessage(msg) {
       const status = document.getElementById("statusMessage");
-      status.textContent = message;
+      status.textContent = msg;
       setTimeout(() => status.textContent = '', 4000);
     }
   </script>
+
 </body>
 </html>
